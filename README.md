@@ -1,5 +1,4 @@
 ## Introduction
-===
 This is an ELF loader.
 
 ## How to use
