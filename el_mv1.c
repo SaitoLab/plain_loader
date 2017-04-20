@@ -80,6 +80,13 @@ int main(int argc, char* argv[]) {
   char* elf;
   int* ph;
 
+  /* for rewrite link_map */
+  int *lm_addr, *lm_phdr, *lm_phnum, *addr_of_phdr_seg;
+
+  /* for setuid program */
+  struct stat sb; /* state buffer of protected binary */
+  seteuid(getuid()); /* load of protected binary is executed as user */
+
   if (argc < 2)
     el_error("Usage: el <elf>");
   el_print("loading %s\n", argv[1]);
@@ -128,6 +135,13 @@ int main(int argc, char* argv[]) {
         relocate(elf, phdr);
         break;
       }
+
+      /* for rewrite link_map */
+      case 6: {
+        addr_of_phdr_seg = (int*)ph[2];
+        break;
+      }
+ 
       default: {
         el_print("unknown PT %d\n", ph[0]);
         break;
@@ -139,7 +153,22 @@ int main(int argc, char* argv[]) {
   g_argc= argc-1;
   g_argv= argv+1;
   el_print("start!: %s %x\n", argv[1], ehdr->e_entry);
-  
+
+  /* for rewrite link_map */
+  lm_addr = (int*)(*((int*)dlsym(RTLD_DEFAULT, "_r_debug") + 1)); /* head addr of the link_map list */
+  lm_phdr = (int*)(lm_addr + 84); /* addr of l_phdr */
+  lm_phnum = (int *)(lm_addr + 86); /* addr of l_phnum */
+  *lm_phdr = (int)addr_of_phdr_seg; /* rewrite l_phdr */
+  *lm_phnum = (int)ehdr->e_phnum; /* rewrite l_phnum */
+
+  /* for setuid program */
+  /* if protected binary is set the setuid bit, the code is executed as root */
+  if(stat(argv[1], &sb) == 0) {
+    if(sb.st_mode & S_ISUID) {
+      seteuid(0);
+    }
+  }
+
   el_init(ehdr);
   ((void*(*)())ehdr->e_entry)();
   return 1;
