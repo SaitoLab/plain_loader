@@ -1,2 +1,8 @@
 H(__libc_start_main)
 
+#ifdef EL_COUNTER
+
+#include "../counter/replace.data"
+
+#endif
+
