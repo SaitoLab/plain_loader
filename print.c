@@ -28,7 +28,7 @@ void el_error(const char *msg){
 }
 
 void el_print(const char *format, ...){
-  return;
+  //return;
   va_list ap;
   va_start(ap, format);
   vprintf(format, ap);

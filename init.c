@@ -19,8 +19,14 @@
 #include <stdio.h>
 #include "init.h"
 #include "print.h"
+
 void el_init(Elf32_Ehdr *ehdr)
 {
   el_print("init: %p\n", ehdr);
+
+#ifdef EL_COUNTER
+  counter_init(ehdr);
+#endif
+
   ((void*(*)())ehdr->e_entry)();
 }

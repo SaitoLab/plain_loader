@@ -19,4 +19,12 @@
 #ifndef __EL_REPLACE
 #define __EL_REPLACE
 
+#ifdef EL_COUNTER
+
+#include "../counter/replace.h"
+
+#endif
+
+
+
 #endif

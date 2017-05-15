@@ -21,6 +21,12 @@
 
 #include<elf.h>
 
+#ifdef EL_COUNTER
+
+#include "../counter/init.h"
+
+#endif
+
 void el_init(Elf32_Ehdr *ehdr);
 
 #endif
