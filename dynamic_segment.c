@@ -17,6 +17,7 @@
 */
 
 #include "dynamic_segment.h"
+#include "el.h"
 
 static void get_index(Elf32_Dyn *head, int dt, int *array);
 
@@ -42,7 +43,7 @@ void get_needed(Elf32_Dyn *head, int *list){
 Elf32_Rel *get_rel(Elf32_Dyn *head){
   int array[2];
   get_index(head, DT_REL, array);
-  return (Elf32_Rel *)( (head+array[0])->d_un.d_ptr );
+  return (Elf32_Rel *)( (head+array[0])->d_un.d_ptr +  (so_flag?so_base:0));
 }
 
 Elf32_Rel *get_pltrel(Elf32_Dyn *head){
@@ -54,7 +55,7 @@ Elf32_Rel *get_pltrel(Elf32_Dyn *head){
 Elf32_Sym *get_dsym(Elf32_Dyn *head){
   int array[2];
   get_index(head, DT_SYMTAB, array);
-  return (Elf32_Sym *)( (head+array[0])->d_un.d_ptr );
+  return (Elf32_Sym *)( (head+array[0])->d_un.d_ptr + (so_flag?so_base:0));
 }
 
 int get_relsz(Elf32_Dyn *head){
@@ -72,5 +73,5 @@ int get_pltrelsz(Elf32_Dyn *head){
 char *get_dstr(Elf32_Dyn *head){
   int array[2];
   get_index(head, DT_STRTAB, array);
-  return (char *)( (head+array[0])->d_un.d_ptr );
+  return (char *)( (head+array[0])->d_un.d_ptr + (so_flag?so_base:0));
 }

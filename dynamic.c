@@ -60,11 +60,13 @@ void relocate(char* elf, Elf32_Phdr *phdr){
   Elf32_Sym *dsym = get_dsym(dyn);
   Elf32_Rel *rel = get_rel(dyn);
   Elf32_Rel *pltrel = get_pltrel(dyn);
+  el_print("dstr: %p, dsym: %p, rel: %p, pltrel: %p\n", dstr, dsym, rel, pltrel);
 
-  el_print("PT_DYNAMIC");
+  el_print("PT_DYNAMIC\n");
 
   get_needed(dyn, needed);
   for ( i=0; *(needed+i) != -1; i++){
+    el_print("needed(%d): %p\n", i, dstr + *(needed+i));
     dlopen(dstr + *(needed+i), RTLD_NOW | RTLD_GLOBAL);
   }
   

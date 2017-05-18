@@ -126,6 +126,7 @@ int main(int argc, char* argv[]) {
   ph= (int*)(elf + ehdr->e_phoff);
   for (i = 0; i < ehdr->e_phnum; i++) {
     phdr = (Elf32_Phdr *)( elf + ehdr->e_phoff + ehdr->e_phentsize * i );
+    el_print("elf: %p, e_phoff: %p, e_phentsize: %p, pdhr: %p\n",elf, ehdr->e_phoff, ehdr->e_phentsize, phdr);
     switch (ph[0]) {
       case 1: {
         load(phdr, fd);
