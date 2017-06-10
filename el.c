@@ -30,7 +30,7 @@
 #include <unistd.h> 
 #include <time.h>
 
-#include <link.h>
+#include "link.h"
 
 #include "dynamic.h"
 #include "values.h"
@@ -80,12 +80,11 @@ int main(int argc, char* argv[]) {
   char* elf;
   int* ph;
 
-  /* for rewrite link_map */
-  int *lm_addr, *lm_phdr, *lm_phnum, *addr_of_phdr_seg;
-
   /* for setuid program */
   struct stat sb; /* state buffer of protected binary */
   seteuid(getuid()); /* load of protected binary is executed as user */
+
+  ElfW(Phdr) *addr_of_phdr_seg=NULL;
 
   if (argc < 2)
     el_error("Usage: el <elf>");
@@ -139,7 +138,7 @@ int main(int argc, char* argv[]) {
 
       /* for rewrite link_map */
       case 6: {
-        addr_of_phdr_seg = (int*)ph[2];
+        addr_of_phdr_seg = (ElfW(Phdr) *)ph[2];
         break;
       }
  
@@ -156,11 +155,11 @@ int main(int argc, char* argv[]) {
   el_print("start!: %s %x\n", argv[1], ehdr->e_entry);
 
   /* for rewrite link_map */
-  lm_addr = (int*)(*((int*)dlsym(RTLD_DEFAULT, "_r_debug") + 1)); /* head addr of the link_map list */
-  lm_phdr = (int*)(lm_addr + 84); /* addr of l_phdr */
-  lm_phnum = (int *)(lm_addr + 86); /* addr of l_phnum */
-  *lm_phdr = (int)addr_of_phdr_seg; /* rewrite l_phdr */
-  *lm_phnum = (int)ehdr->e_phnum; /* rewrite l_phnum */
+  struct link_map *link_map = (struct link_map *)(*((ElfW(Addr) *)dlsym(RTLD_DEFAULT, "_r_debug") + 1)); /* head addr of the link_map list */
+
+  link_map->l_phdr = addr_of_phdr_seg;
+  link_map->l_phnum = ehdr->e_phnum;
+  link_map->l_entry = ehdr->e_entry;
 
   /* for setuid program */
   /* if protected binary is set the setuid bit, the code is executed as root */
