@@ -1,8 +1,9 @@
 ## Introduction
 This is an ELF loader.
+Target environment: 32bit Linux OS
 
 ## How to use
 ```
 $ make
-$ ./el_mv1 [path of an ELF executable]
+$ ./el [path of an ELF executable]
 ```
