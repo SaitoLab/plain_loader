@@ -80,6 +80,11 @@ int main(int argc, char* argv[]) {
   char* elf;
   int* ph;
 
+  /* for link_map */
+  ElfW(Addr) map_start = 0xffffffff, map_end = 0;
+  ElfW(Addr) text_end = 0;
+	ElfW(Phdr) *dphdr = NULL;
+
   /* for setuid program */
   struct stat sb; /* state buffer of protected binary */
   seteuid(getuid()); /* load of protected binary is executed as user */
@@ -128,6 +133,10 @@ int main(int argc, char* argv[]) {
     el_print("elf: %p, e_phoff: %p, e_phentsize: %p, pdhr: %p\n",elf, ehdr->e_phoff, ehdr->e_phentsize, phdr);
     switch (ph[0]) {
       case 1: {
+        // FIXME shared library file, add base address
+        if (phdr->p_vaddr < map_start) map_start = phdr->p_vaddr;
+        if ((phdr->p_vaddr + phdr->p_memsz) >  map_end) map_end = phdr->p_vaddr + phdr->p_memsz;
+        if ((phdr->p_flags & PF_X) != 0) text_end = phdr->p_vaddr + phdr->p_memsz;
         load(phdr, fd);
         break;
       }
@@ -157,9 +166,20 @@ int main(int argc, char* argv[]) {
   /* for rewrite link_map */
   struct link_map *link_map = (struct link_map *)(*((ElfW(Addr) *)dlsym(RTLD_DEFAULT, "_r_debug") + 1)); /* head addr of the link_map list */
 
+  dphdr = segHeadAddress(elf, PT_DYNAMIC);
+  el_print("dphdr: %p\n", dphdr->p_vaddr);
+  link_map->l_ld = (ElfW(Dyn) *)dphdr->p_vaddr;
   link_map->l_phdr = addr_of_phdr_seg;
   link_map->l_phnum = ehdr->e_phnum;
   link_map->l_entry = ehdr->e_entry;
+//  link_map->l_versyms = 
+  link_map->l_map_start = map_start;
+  link_map->l_map_end =  map_start + (ElfW(Addr))len;
+  link_map->l_text_end =  text_end;
+//  link_map->l_relro_addr =
+//  link_map->l_relro_size =
+  printf("map_start: 0x%x map_end: 0x%x\n", map_start, map_end);
+  printf("text_end: 0x%x\n", text_end);
 
   /* for setuid program */
   /* if protected binary is set the setuid bit, the code is executed as root */
