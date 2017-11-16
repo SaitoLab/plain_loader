@@ -16,10 +16,12 @@
     https://github.com/shinh/tel_ldr/blob/master/LICENSE
 */
 
-#ifndef __EL_PRINT
-#define __EL_PRINT
-
-void el_print(const char *format, ...);
-void el_error(const char *msg);
-
+#ifdef __EL_PRINT
+#define el_print(fmt, args...) printf(fmt, ##args)
+#define el_error(msg) fprintf(stderr, "%s", msg)
+//void el_print(const char *format, ...);
+//void el_error(const char *msg);
+#else
+#define el_print(fmt, args...)
+#define el_error(msg)
 #endif
