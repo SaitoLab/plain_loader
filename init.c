@@ -28,5 +28,4 @@ void el_init(Elf32_Ehdr *ehdr)
   counter_init(ehdr);
 #endif
 
-  ((void*(*)())ehdr->e_entry)();
 }
